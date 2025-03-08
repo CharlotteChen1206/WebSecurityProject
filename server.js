@@ -1,10 +1,11 @@
+require('dotenv').config();
 const fs = require('fs');
 const https = require('https');
 const helmet = require('helmet');
 const express = require('express');
 
-const app = express();
-const port = 3000;
+const app = require('./app');
+const port = process.env.PORT || 3000;
 
 app.use(helmet());
 app.use(express.json());
