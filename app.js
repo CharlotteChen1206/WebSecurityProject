@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const fs = require('fs');
+const https = require('https');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
@@ -101,9 +103,21 @@ app.get('/super-dashboard', ensureSuperUser, (req, res) => {
 res.send('<h1>Welcome to the Super User Dashboard!</h1><a href="/logout">Logout</a>');
 });
 
-// 啟動伺服器（若不使用 HTTPS，可直接用 `node app.js` 啟動）
-if (process.env.USE_HTTPS === 'false') {
-    app.listen(PORT, () => console.log(`✅ 伺服器運行中: http://localhost:${PORT}`));
-}
-
-module.exports = app; // 讓 `server.js` 使用
+if (process.env.USE_HTTPS === 'true') {
+    // 如果要使用 HTTPS，就讀取憑證並啟動 https.createServer()
+    const sslOptions = {
+      key: fs.readFileSync('key.pem'),
+      cert: fs.readFileSync('cert.pem'),
+    };
+  
+    https.createServer(sslOptions, app).listen(PORT, () => {
+      console.log(`HTTPS Server listening on https://localhost:${PORT}`);
+    });
+  } else {
+    // 如果不使用 HTTPS，就直接用 app.listen() 啟動 HTTP 伺服器
+    app.listen(PORT, () => {
+      console.log(`HTTP Server listening on http://localhost:${PORT}`);
+    });
+  }
+  
+  module.exports = app;
