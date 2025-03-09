@@ -41,7 +41,7 @@ app.use(session({
     cookie: {
         httpOnly: true,
         secure: process.env.USE_HTTPS === 'true',
-        sameSite: 'strict',
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 15, // 15 分鐘
     },
 }));
