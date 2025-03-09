@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+</head>
+<body>
+    <header><%- include('../partials/header') %></header>
+    
+    <main>
+        <h1>Welcome, <%= username %>!</h1>
+        <h2>Your Current XP: <%= xp %></h2>
+        
+        <section>
+            <h3>Daily Quests</h3>
+            <ul>
+                <% quests.forEach(quest => { %>
+                    <li>
+                        <strong><%= quest.name %></strong> - <%= quest.description %> 
+                        [XP: <%= quest.xp %>]
+                        <form action="/quests/<%= quest.id %>/complete" method="POST">
+                            <button type="submit">Complete Quest</button>
+                        </form>
+                    </li>
+                <% }) %>
+            </ul>
+        </section>
+    </main>
+    
+    <footer><%- include('../partials/footer') %></footer>
+</body>
+</html>

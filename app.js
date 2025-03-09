@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const passport = require('passport');
 const cookieParser = require('cookie-parser'); 
 const csrf = require('csurf');
+const path = require('path');
 const { ensureAuthenticated, ensureSuperUser } = require('./middlewares/auth');
 
 // 初始化 Express
@@ -16,6 +17,13 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cookieParser()); // 確保 Express 解析 Cookie
+
+// 設置試圖引擎
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// 设置静态文件
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // 設定 HTTP Header 安全
 app.use(
@@ -76,6 +84,7 @@ app.use('/api/google', require('./routes/googleAuth'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/quests', require('./routes/quests'));
 app.use('/profile', require('./routes/profile'));
+app.use('/home', require('./routes/home'));
 
 // 主要路由
 app.get('/', (req, res) => {
