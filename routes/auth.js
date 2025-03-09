@@ -75,4 +75,49 @@ router.post('/login', loginLimiter, async (req, res) => {
   }
 });
 
+// Google SSO
+router.get('/google', passport.authenticate('google', { scope: ['profile'] }));
+
+router.get('/google/callback',
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+        res.redirect('/dashboard');
+    });
+
+    // refresh token
+    router.post('/refresh-token', async (req, res) => {
+      try {
+          const { refreshToken } = req.body;
+          if (!refreshToken) return res.status(403).json({ message: "Refresh Token is required" });
+  
+          const user = await User.findOne({ refreshToken });
+          if (!user) return res.status(403).json({ message: "Invalid Refresh Token" });
+  
+          jwt.verify(refreshToken, process.env.REFRESH_SECRET, (err, decoded) => {
+              if (err) return res.status(403).json({ message: "Invalid Refresh Token" });
+  
+              const newAccessToken = generateAccessToken(user);
+              res.status(200).json({ accessToken: newAccessToken });
+          });
+  
+      } catch (error) {
+          res.status(500).json({ error: error.message });
+      }
+  });
+
+  router.post('/logout', async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        const user = await User.findOne({ refreshToken });
+        if (!user) return res.status(403).json({ message: "Invalid Refresh Token" });
+
+        user.refreshToken = null;
+        await user.save();
+
+        res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;
