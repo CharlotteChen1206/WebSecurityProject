@@ -18,7 +18,11 @@ const PORT = process.env.PORT || 3000;
 app.use(cookieParser()); // 確保 Express 解析 Cookie
 
 // 設定 HTTP Header 安全
-app.use(helmet());
+app.use(
+    helmet({
+      hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
+    })
+  );
 
 // 解析 JSON 和表單
 app.use(express.json());
@@ -70,6 +74,8 @@ require('./config/passport'); // 載入 Google OAuth 設定
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/google', require('./routes/googleAuth'));
 app.use('/api/admin', require('./routes/admin'));
+app.use('/quests', require('./routes/quests'));
+app.use('/profile', require('./routes/profile'));
 
 // 主要路由
 app.get('/', (req, res) => {
@@ -103,21 +109,14 @@ app.get('/super-dashboard', ensureSuperUser, (req, res) => {
 res.send('<h1>Welcome to the Super User Dashboard!</h1><a href="/logout">Logout</a>');
 });
 
-if (process.env.USE_HTTPS === 'true') {
-    // 如果要使用 HTTPS，就讀取憑證並啟動 https.createServer()
-    const sslOptions = {
-      key: fs.readFileSync('key.pem'),
-      cert: fs.readFileSync('cert.pem'),
-    };
+const sslOptions = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem'),
+  };
   
-    https.createServer(sslOptions, app).listen(PORT, () => {
-      console.log(`HTTPS Server listening on https://localhost:${PORT}`);
-    });
-  } else {
-    // 如果不使用 HTTPS，就直接用 app.listen() 啟動 HTTP 伺服器
-    app.listen(PORT, () => {
-      console.log(`HTTP Server listening on http://localhost:${PORT}`);
-    });
-  }
+  // 3. 直接啟動 HTTPS Server
+  https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`HTTPS Server listening on https://localhost:${PORT}`);
+  });
   
   module.exports = app;
