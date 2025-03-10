@@ -24,6 +24,7 @@ app.set('views', path.join(__dirname, 'views'));
 
 // 设置静态文件
 app.use('/public', express.static(path.join(__dirname, 'public')));
+app.use('/', require('./routes/authViews'));
 
 // 設定 HTTP Header 安全
 app.use(
