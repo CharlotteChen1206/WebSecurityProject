@@ -1,4 +1,6 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const argon2 = require('argon2');
 const jwt = require('jsonwebtoken');
@@ -33,10 +35,17 @@ const generateRefreshToken = (user) => {
 // 本地註冊
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, role = 'user' } = req.body;
+    const { username, email, password, role = 'user' } = req.body;
     const hashedPassword = await argon2.hash(password);
 
-    const newUser = new User({ username, password: hashedPassword, role });
+    const newUser = new User({ 
+      username, 
+      email, 
+      password: hashedPassword, 
+      role,
+      level: 1,
+      xp: 0
+    });
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully!" });
@@ -46,32 +55,48 @@ router.post('/register', async (req, res) => {
 });
 
 // 本地登入 + JWT
-router.post('/login', loginLimiter, async (req, res) => {
+router.post('/login', loginLimiter, async (req, res, next) => {
   try {
-    req.session.regenerate((err) => {
-      if (err) return res.status(500).json({ error: "Session regeneration failed" });
-  });
-
     const { username, password } = req.body;
+    
+    // 查找用戶
     const user = await User.findOne({ username });
-    if (!user) return res.status(400).json({ message: "User not found" });
+    if (!user) {
+      console.error("找不到用戶:", username);
+      return res.status(400).json({ message: "User not found" });
+    }
 
+    // 驗證密碼
     const isMatch = await argon2.verify(user.password, password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) {
+      console.error("密碼不匹配:", username);
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
 
-    const accessToken = generateAccessToken(user);
-        const refreshToken = generateRefreshToken(user);
-        user.refreshToken = refreshToken;
-        await user.save();
+    // 在新的會話中登入用戶
+    req.session.regenerate(async (err) => {
+      if (err) {
+        console.error("會話重新生成錯誤:", err);
+        return res.status(500).json({ error: "Session regeneration failed" });
+      }
 
-        res.status(200).json({ 
-          message: "Login successful!",
-          accessToken,
-          refreshToken
+      // 手動登入
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          console.error("登入錯誤:", loginErr);
+          return next(loginErr);
+        }
+        
+        console.log("用戶成功登入:", user.username, "ID:", user._id);
+        console.log("會話 ID:", req.sessionID);
+        
+        // 重定向到儀表板
+        res.redirect('/dashboard');
       });
-
+    });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    console.error("登入處理錯誤:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 

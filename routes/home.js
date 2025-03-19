@@ -37,32 +37,4 @@ router.get("/", (req, res) => {
     });
 });
 
-// 儀表板路由 - 需要登入才能訪問
-router.get("/dashboard", isAuthenticated, (req, res) => {
-    try {
-        // 讀取用戶資料
-        const dataPath = path.join(__dirname, "../public/data.json");
-        
-        fs.readFile(dataPath, "utf8", (err, data) => {
-            if (err) {
-                console.error("Error reading user data:", err);
-                return res.status(500).send("Cannot load user data");
-            }
-            
-            const db = JSON.parse(data);
-            
-            const userData = db.user;
-            const questsData = db.quests;
-            
-            res.render("pages/dashboard", {
-                user: userData,
-                quests: questsData
-            });
-        });
-    } catch (error) {
-        console.error("Dashboard error:", error);
-        res.status(500).send("Server error");
-    }
-});
-
 module.exports = router;

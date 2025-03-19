@@ -69,11 +69,12 @@ const csrfProtection = csrf({ cookie: true });
 
 // 排除API路由的CSRF保護
 app.use((req, res, next) => {
-  if (req.path.startsWith('/api/') || req.path === '/auth/google/callback') {
+  if (req.path.startsWith('/api/') || req.path === '/auth/google/callback' || req.path === '/auth/google') {
     return next();
   }
   csrfProtection(req, res, next);
 });
+
 
 // Passport 初始化
 app.use(passport.initialize());
@@ -103,6 +104,7 @@ app.use('/api/google', require('./routes/googleAuth')); // 舊的Google認證路
 
 // 3. 功能路由 (需要登入)
 app.use('/profile', ensureAuthenticated, require('./routes/profile')); // 用戶資料
+app.use('/dashboard', ensureAuthenticated, require('./routes/dashboard')); // 儀表板
 app.use('/quests', ensureAuthenticated, require('./routes/quests')); // 任務系統
 
 // 4. 管理員路由
@@ -128,26 +130,27 @@ app.get('/logout', (req, res) => {
   });
 });
 
-/// 錯誤處理中間件
+// 錯誤處理中間件
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).render('pages/error', {
-      status: 500,
-      message: '哎呀，出了點問題！',
-      description: '服務器遇到了一個錯誤，請稍後再試。',
-      error: process.env.NODE_ENV === 'development' ? err : {}
-    });
+  console.error(err.stack);
+  res.status(500).render('pages/error', {
+    status: 500,
+    message: 'Oops, something went wrong!',
+    description: 'The server encountered an error. Please try again later.',
+    error: process.env.NODE_ENV === 'development' ? err : {},
+    user: req.user || null
   });
-  
-  // 404 處理
-  app.use((req, res) => {
-    res.status(404).render('pages/error', {
-      status: 404,
-      message: '找不到頁面',
-      description: '很抱歉，您請求的頁面不存在或已經被移除。',
-      error: {}
-    });
+});
+
+// 404 處理
+app.use((req, res) => {
+  res.status(404).render('pages/error', {
+    status: 404,
+    message: 'Page Not Found',
+    description: 'Sorry, the page you requested does not exist or has been moved.',
+    error: {}
   });
+});
 
 // 啟動伺服器
 const sslOptions = {

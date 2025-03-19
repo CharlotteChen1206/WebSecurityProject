@@ -1,13 +1,16 @@
 {
-    "user": {
+  "quests": [
+    {
       "id": 1,
-      "name": "Player1",
-      "xp": 0,
-      "level": 1,
-      "badges": []
+      "name": "Read for 30 mins",
+      "xp": 50,
+      "completed": false
     },
-    "quests": [
-      { "id": 1, "name": "read for 30 mins", "xp": 50, "completed": false },
-      { "id": 2, "name": "read for 1 hour", "xp": 30, "completed": false }
-    ]
-  }
+    {
+      "id": 2,
+      "name": "Read for 1 hour",
+      "xp": 30,
+      "completed": false
+    }
+  ]
+}

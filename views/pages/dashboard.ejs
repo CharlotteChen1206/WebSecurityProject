@@ -9,24 +9,38 @@
     
     <main>
         <div class="dashboard-container">
-            <h1>Welcome, <%= user.name %>!</h1>
-            <h2>Your Current XP: <%= user.xp %> | Level: <%= user.level %></h2>
+            <% if (user) { %>
+                <h1>Welcome, <%= user.name %>!</h1>
+                <h2>Your Current XP: <%= user.xp %> | Level: <%= user.level %></h2>
+            <% } else { %>
+                <h1>Debug: user is undefined!</h1>
+                <p>Check your session or route: <%= JSON.stringify(user) %></p>
+            <% } %>
             
             <section class="profile-section">
                 <h3>Your Profile</h3>
-                <div id="profile-info">
-                    <p><strong>Username:</strong> <%= user.name %></p>
-                    <p><strong>Level:</strong> <%= user.level %></p>
-                    <p><strong>XP:</strong> <%= user.xp %></p>
-                </div>
+                <% if (user) { %>
+                    <div id="profile-info">
+                        <p><strong>Username:</strong> <%= user.username %></p>
+                        <p><strong>Email:</strong> <%= user.email %></p>
+                        <img src="<%= user.profileImage %>" alt="Profile Picture">
+                        <p><strong>Level:</strong> <%= user.level %></p>
+                        <p><strong>XP:</strong> <%= user.xp %></p>
+                    </div>
+                <% } else { %>
+                    <p>No user data available.</p>
+                <% } %>
                 
-                <!-- 個人資料更新表單（占位符） -->
+                <!-- 個人資料更新表單 -->
                 <div id="profile-update">
                     <h4>Update Profile</h4>
-                    <form id="profile-form">
+                    <form id="profile-form" action="/dashboard/update-profile" method="POST">
+                        <% if (locals.csrfToken) { %>
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <% } %>
                         <div class="form-group">
                             <label for="display-name">Display Name:</label>
-                            <input type="text" id="display-name" name="displayName" value="<%= user.name %>">
+                            <input type="text" id="display-name" name="displayName" value="<%= user ? user.name : '' %>">
                         </div>
                         <button type="submit" class="btn-update">Update Profile</button>
                     </form>
@@ -41,7 +55,10 @@
                             <strong><%= quest.name %></strong> 
                             [XP: <%= quest.xp %>]
                             <% if (!quest.completed) { %>
-                                <form action="/quests/<%= quest.id %>/complete" method="POST">
+                                <form action="/dashboard/complete-quest/<%= quest.id %>" method="POST">
+                                    <% if (locals.csrfToken) { %>
+                                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <% } %>
                                     <button type="submit" class="btn-complete">Complete Quest</button>
                                 </form>
                             <% } else { %>
@@ -53,7 +70,7 @@
             </section>
             
             <div class="logout-container">
-                <a href="/auth/google/logout" class="btn-logout">Logout</a>
+                <a href="/logout" class="btn-logout">Logout</a>
             </div>
         </div>
     </main>
