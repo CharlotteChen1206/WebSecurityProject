@@ -2,7 +2,28 @@
 <html lang="en">
 <head>
     <%- include('../partials/head') %>
-    <link rel="stylesheet" href="/auth.css"> <!-- 修正 CSS 路徑 -->
+    <link rel="stylesheet" href="/auth.css">
+    <script>
+        // 客戶端驗證函數
+        function validateForm() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            // 基本驗證 - 確保字段不為空
+            if (!username || !password) {
+                alert('Username and password are required');
+                return false;
+            }
+            
+            // 防止XSS注入的基本檢查
+            if (username.includes('<') || username.includes('>')) {
+                alert('Username contains invalid characters');
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
 </head>
 <body class="auth-page">
     <header><%- include('../partials/header') %></header>
@@ -10,23 +31,31 @@
     <main class="auth-container">
         <h1>Login System</h1>
         
-        <div class="auth-options">
-            <a href="/auth/google" class="google-btn"> <!-- 修正 Google 認證路徑 -->
-                <img src="/google-icon.svg" alt="Google" /> <!-- 修正圖標路徑 -->
+        <!-- 錯誤消息顯示 -->
+        <% if (locals.errorMessage) { %>
+            <div class="error-message">
+                <%= errorMessage %>
+            </div>
+        <% } %>
+        
+        <div class="oauth-options">
+            <a href="/auth/google" class="btn-google">
+                <img src="/google-icon.svg" alt="Google" />
                 Sign in with Google
             </a>
             
-            <div class="divider">
+            <div class="separator">
                 <span>Or</span>
             </div>
         </div>
         
-        <form action="/auth/login" method="POST" class="auth-form"> <!-- 修正表單提交路徑 -->
+        <form action="/auth/login" method="POST" class="auth-form" onsubmit="return validateForm()">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required
+                       maxlength="20">
             </div>
             
             <div class="form-group">
@@ -34,10 +63,10 @@
                 <input type="password" id="password" name="password" required>
             </div>
             
-            <button type="submit" class="submit-btn">Login</button>
+            <button type="submit" class="btn-login">Login</button>
         </form>
         
-        <p class="auth-footer">
+        <p class="auth-links">
             No account yet? <a href="/signup">Create an account</a>
         </p>
     </main>

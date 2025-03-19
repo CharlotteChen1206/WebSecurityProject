@@ -23,6 +23,11 @@
                     <div id="profile-info">
                         <p><strong>Username:</strong> <%= user.username %></p>
                         <p><strong>Email:</strong> <%= user.email %></p>
+                        <% if (user.bio) { %>
+                            <p><strong>Bio:</strong> <%= user.bio %></p>
+                        <% } else { %>
+                            <p><strong>Bio:</strong> <em>No bio yet. Add one below!</em></p>
+                        <% } %>
                         <img src="<%= user.profileImage %>" alt="Profile Picture">
                         <p><strong>Level:</strong> <%= user.level %></p>
                         <p><strong>XP:</strong> <%= user.xp %></p>
@@ -40,7 +45,12 @@
                         <% } %>
                         <div class="form-group">
                             <label for="display-name">Display Name:</label>
-                            <input type="text" id="display-name" name="displayName" value="<%= user ? user.name : '' %>">
+                            <input type="text" id="display-name" name="displayName" value="<%= user ? user.name : '' %>" maxlength="50" pattern="[A-Za-z0-9\s\-_\.,]{2,50}" title="2-50 characters, alphanumeric and basic punctuation only">
+                        </div>
+                        <div class="form-group">
+                            <label for="bio">Bio:</label>
+                            <textarea id="bio" name="bio" maxlength="500" rows="4"><%= user && user.bio ? user.bio : '' %></textarea>
+                            <small>Maximum 500 characters</small>
                         </div>
                         <button type="submit" class="btn-update">Update Profile</button>
                     </form>

@@ -99,7 +99,24 @@
     font-size: 1rem;
 }
 
-.form-group input:focus {
+.form-group textarea.bio-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #777;
+    font-size: 0.8rem;
+}
+
+.form-group input:focus, .form-group textarea:focus {
     outline: none;
     border-color: #4CAF50;
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
@@ -157,4 +174,29 @@
     border-radius: 4px;
     margin-bottom: 15px;
     font-size: 0.9rem;
+}
+
+/* 為Bio文本框增加樣式 */
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* 小說明文字樣式 */
+.form-group small {
+    display: block;
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: 5px;
 }

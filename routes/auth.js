@@ -7,6 +7,7 @@ const jwt = require('jsonwebtoken');
 const passport = require('passport');
 const User = require('../models/User');
 const rateLimit = require('express-rate-limit');
+const { sanitizeInput, validateUsername, validateEmail, validatePassword } = require('../utils/sanitizer');
 const router = express.Router();
 
 const loginLimiter = rateLimit({
@@ -36,6 +37,46 @@ const generateRefreshToken = (user) => {
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, role = 'user' } = req.body;
+
+    // 防止XSS的輸入驗證
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+    
+    // 驗證格式
+    if (!validateUsername(username)) {
+      return res.status(400).json({ message: "Username must be 3-20 characters and contain only letters, numbers, and underscores" });
+    }
+    
+    if (!validateEmail(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+    
+    if (!validatePassword(password)) {
+      return res.status(400).json({ message: "Password must be at least 8 characters and include both letters and numbers" });
+    }
+    
+    // 防止角色提升攻擊
+    if (role !== 'user') {
+      role = 'user'; // 強制設為普通用戶
+    }
+    
+    // 淨化輸入
+    username = sanitizeInput(username);
+    email = sanitizeInput(email);
+    
+    // 檢查用戶名是否已存在
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: "Username already exists" });
+    }
+    
+    // 檢查郵箱是否已存在
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      return res.status(400).json({ message: "Email already registered" });
+    }
+    
     const hashedPassword = await argon2.hash(password);
 
     const newUser = new User({ 
@@ -44,13 +85,15 @@ router.post('/register', async (req, res) => {
       password: hashedPassword, 
       role,
       level: 1,
-      xp: 0
+      xp: 0,
+      bio: ''
     });
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully!" });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("註冊錯誤:", error);
+    res.status(500).json({ error: "Registration failed. Please try again." });
   }
 });
 
@@ -58,12 +101,20 @@ router.post('/register', async (req, res) => {
 router.post('/login', loginLimiter, async (req, res, next) => {
   try {
     const { username, password } = req.body;
+
+      // 基本輸入驗證
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username and password are required" });
+    }
+    
+    // 淨化輸入
+    const sanitizedUsername = sanitizeInput(username);
     
     // 查找用戶
-    const user = await User.findOne({ username });
+    const user = await User.findOne({ username: sanitizedUsername });
     if (!user) {
-      console.error("找不到用戶:", username);
-      return res.status(400).json({ message: "User not found" });
+      console.error("找不到用戶:", sanitizedUsername);
+      return res.status(400).json({ message: "Invalid credentials" }); // 不洩露具體錯誤
     }
 
     // 驗證密碼
@@ -72,6 +123,10 @@ router.post('/login', loginLimiter, async (req, res, next) => {
       console.error("密碼不匹配:", username);
       return res.status(400).json({ message: "Invalid credentials" });
     }
+
+     // 更新登入計數
+     user.loginCount = (user.loginCount || 0) + 1;
+     await user.save();
 
     // 在新的會話中登入用戶
     req.session.regenerate(async (err) => {

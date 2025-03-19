@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const fs = require("fs");
 const path = require("path");
+const User = require("../models/User");
+const { sanitizeInput } = require("../utils/sanitizer");
 
 // 驗證使用者是否已登入的中間件
 const isAuthenticated = (req, res, next) => {
@@ -41,6 +43,7 @@ router.get("/", isAuthenticated, async (req, res) => {
         name: req.user.name || req.user.username || req.user.displayName || "User",
         username: req.user.username || req.user.name || "User",
         email: req.user.email || "",
+        bio: req.user.bio || "",
         profileImage: req.user.profileImage || "/default-profile.png",
         xp: req.user.xp || 0,
         level: req.user.level || 1,
@@ -58,24 +61,44 @@ router.get("/", isAuthenticated, async (req, res) => {
   });
 });
 
-// 更新用戶資料（僅更新 session，建議同步更新 MongoDB）
+// 更新用戶資料
 router.post("/update-profile", isAuthenticated, async (req, res) => {
-  const { displayName } = req.body;
+  const { displayName, bio } = req.body;
 
   if (!req.user) {
     console.error("更新資料時 req.user 為空");
     return res.redirect('/login');
   }
 
-  // 更新 req.user 中的資料
-  req.user.name = displayName;
-  req.user.displayName = displayName;
-  req.user.username = displayName;
+   // 驗證和淨化輸入
+   if (!displayName || displayName.trim() === "") {
+    return res.status(400).send("Display name cannot be empty");
+  }
 
-  // TODO: 可在此處加入資料庫更新邏輯，例如：
-  // await User.findByIdAndUpdate(req.user._id, { name: displayName });
+  // 淨化輸入以防止XSS攻擊
+  const sanitizedName = sanitizeInput(displayName);
+  const sanitizedBio = bio ? sanitizeInput(bio) : "";
 
-  return res.redirect('/dashboard');
+  try {
+    // 更新資料庫中的用戶資料
+    await User.findByIdAndUpdate(req.user._id, { 
+      name: sanitizedName, 
+      displayName: sanitizedName,
+      username: sanitizedName,
+      bio: sanitizedBio
+    });
+
+    // 更新 req.user 中的資料
+    req.user.name = sanitizedName;
+    req.user.displayName = sanitizedName;
+    req.user.username = sanitizedName;
+    req.user.bio = sanitizedBio;
+
+    return res.redirect('/dashboard');
+  } catch (error) {
+    console.error("更新用戶資料錯誤:", error);
+    return res.status(500).send("更新資料時發生錯誤");
+  }
 });
 
 // 任務完成處理
@@ -83,7 +106,7 @@ router.post("/complete-quest/:id", isAuthenticated, async (req, res) => {
   const questId = parseInt(req.params.id);
   const dataPath = path.join(__dirname, "../public/data.json");
 
-  fs.readFile(dataPath, "utf8", (err, data) => {
+  fs.readFile(dataPath, "utf8", async (err, data) => { // 注意這裡添加 async
     if (err) {
       console.error("讀取任務資料錯誤:", err);
       return res.status(500).json({ error: "無法讀取任務資料" });
@@ -101,29 +124,36 @@ router.post("/complete-quest/:id", isAuthenticated, async (req, res) => {
       // 更新任務狀態為已完成
       quest.completed = true;
 
-      // 更新使用者的 XP（這裡僅更新 session，建議同步更新到資料庫）
+      // 更新使用者的 XP
       if (req.user) {
         req.user.xp = (req.user.xp || 0) + quest.xp;
         if (req.user.xp >= (req.user.level || 1) * 100) {
           req.user.level = (req.user.level || 1) + 1;
         }
-        // TODO: 更新 MongoDB 中的使用者資料，例如：
-        // await User.findByIdAndUpdate(req.user._id, { xp: req.user.xp, level: req.user.level });
-      }
-
-      // 將更新後的 quests 資料寫回 data.json
-      fs.writeFile(dataPath, JSON.stringify(db, null, 2), writeErr => {
-        if (writeErr) {
-          console.error("寫入任務資料錯誤:", writeErr);
-          return res.status(500).json({ error: "無法儲存任務資料" });
+        
+        // 更新 MongoDB 中的使用者資料
+        try {
+          await User.findByIdAndUpdate(req.user._id, { 
+            xp: req.user.xp, 
+            level: req.user.level 
+          });
+        } catch (dbError) {
+          console.error("更新用戶XP和Level錯誤:", dbError);
         }
-        return res.redirect('/dashboard');
-      });
-    } catch (parseErr) {
-      console.error("資料處理錯誤:", parseErr);
-      return res.status(500).json({ error: "資料處理錯誤" });
+      }
+  // 將更新後的 quests 資料寫回 data.json
+  fs.writeFile(dataPath, JSON.stringify(db, null, 2), writeErr => {
+    if (writeErr) {
+      console.error("寫入任務資料錯誤:", writeErr);
+      return res.status(500).json({ error: "無法儲存任務資料" });
     }
+    return res.redirect('/dashboard');
   });
+} catch (parseErr) {
+  console.error("資料處理錯誤:", parseErr);
+  return res.status(500).json({ error: "資料處理錯誤" });
+}
+});
 });
 
 module.exports = router;

@@ -2,7 +2,45 @@
 <html lang="en">
 <head>
     <%- include('../partials/head') %>
-    <link rel="stylesheet" href="/auth.css"> <!-- 修正 CSS 路徑 -->
+    <link rel="stylesheet" href="/auth.css">
+    <script>
+        // 客戶端表單驗證
+        function validateForm() {
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // 驗證用戶名
+            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            if (!usernameRegex.test(username)) {
+                alert('Username must be 3-20 characters and contain only letters, numbers, and underscores.');
+                return false;
+            }
+            
+            // 驗證郵箱
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address.');
+                return false;
+            }
+            
+            // 驗證密碼強度
+            const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            if (!passwordRegex.test(password)) {
+                alert('Password must be at least 8 characters and include both letters and numbers.');
+                return false;
+            }
+            
+            // 確認密碼匹配
+            if (password !== confirmPassword) {
+                alert('Passwords do not match.');
+                return false;
+            }
+            
+            return true;
+        }
+    </script>
 </head>
 <body class="auth-page">
     <header><%- include('../partials/header') %></header>
@@ -10,23 +48,32 @@
     <main class="auth-container">
         <h1>Create new account</h1>
         
+        <!-- 可能的錯誤消息顯示 -->
+        <% if (locals.errorMessage) { %>
+            <div class="error-message">
+                <%= errorMessage %>
+            </div>
+        <% } %>
+        
         <div class="auth-options">
-            <a href="/auth/google" class="google-btn"> <!-- 修正 Google 認證路徑 -->
-                <img src="/google-icon.svg" alt="Google" /> <!-- 修正圖標路徑 -->
+            <a href="/auth/google" class="btn-google">
+                <img src="/google-icon.svg" alt="Google" />
                 Sign up with Google
             </a>
             
-            <div class="divider">
+            <div class="separator">
                 <span>Or</span>
             </div>
         </div>
         
-        <form action="/auth/register" method="POST" class="auth-form"> <!-- 修正表單提交路徑 -->
+        <form action="/auth/register" method="POST" class="auth-form" onsubmit="return validateForm()">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             
             <div class="form-group">
                 <label for="username">Username</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" required 
+                       pattern="[a-zA-Z0-9_]{3,20}" 
+                       title="Username must be 3-20 characters and contain only letters, numbers, and underscores">
             </div>
             
             <div class="form-group">
@@ -36,7 +83,9 @@
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" required 
+                       pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}" 
+                       title="Password must be at least 8 characters and include both letters and numbers">
             </div>
             
             <div class="form-group">
@@ -44,10 +93,10 @@
                 <input type="password" id="confirmPassword" name="confirmPassword" required>
             </div>
             
-            <button type="submit" class="submit-btn">Create account</button>
+            <button type="submit" class="btn-login">Create account</button>
         </form>
         
-        <p class="auth-footer">
+        <p class="auth-links">
             Have an account? <a href="/login">Sign in now</a>
         </p>
     </main>

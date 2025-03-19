@@ -31,6 +31,11 @@ const UserSchema = new mongoose.Schema({
   displayName: {
     type: String
   },
+  bio: {
+    type: String,
+    default: '',
+    maxLength: 500  // 限制字符數
+  },
   profileImage: {
     type: String,
     default: '/default-profile.png'
