@@ -2,53 +2,53 @@
 <html lang="en">
 <head>
     <%- include('../partials/head') %>
-    <link rel="stylesheet" href="/public/auth.css">
+    <link rel="stylesheet" href="/auth.css"> <!-- 修正 CSS 路徑 -->
 </head>
 <body class="auth-page">
     <header><%- include('../partials/header') %></header>
     
     <main class="auth-container">
-        <h1>Create Account</h1>
+        <h1>註冊帳號</h1>
         
         <div class="auth-options">
-            <a href="/api/google" class="google-btn">
-                <img src="/public/google-icon.svg" alt="Google" />
-                Sign up with Google
+            <a href="/auth/google" class="google-btn"> <!-- 修正 Google 認證路徑 -->
+                <img src="/google-icon.svg" alt="Google" /> <!-- 修正圖標路徑 -->
+                使用 Google 註冊
             </a>
             
             <div class="divider">
-                <span>or</span>
+                <span>或</span>
             </div>
         </div>
         
-        <form action="/api/auth/signup" method="POST" class="auth-form">
+        <form action="/auth/register" method="POST" class="auth-form"> <!-- 修正表單提交路徑 -->
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             
             <div class="form-group">
-                <label for="username">Username</label>
+                <label for="username">使用者名稱</label>
                 <input type="text" id="username" name="username" required>
             </div>
             
             <div class="form-group">
-                <label for="email">Email</label>
+                <label for="email">電子郵件</label>
                 <input type="email" id="email" name="email" required>
             </div>
             
             <div class="form-group">
-                <label for="password">Password</label>
+                <label for="password">密碼</label>
                 <input type="password" id="password" name="password" required>
             </div>
             
             <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
+                <label for="confirmPassword">確認密碼</label>
                 <input type="password" id="confirmPassword" name="confirmPassword" required>
             </div>
             
-            <button type="submit" class="submit-btn">Create Account</button>
+            <button type="submit" class="submit-btn">創建帳號</button>
         </form>
         
         <p class="auth-footer">
-            Already have an account? <a href="/login">Log In</a>
+            已經有帳號？ <a href="/login">立即登入</a>
         </p>
     </main>
     

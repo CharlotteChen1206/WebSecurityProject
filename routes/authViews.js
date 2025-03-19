@@ -1,20 +1,27 @@
 const express = require('express');
-const passport = require('passport');
 const router = express.Router();
 
-// 渲染登录页面
-router.get('/login', (req, res) => {
+// 檢查用戶是否已登入的中間件
+const redirectIfAuthenticated = (req, res, next) => {
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return res.redirect('/dashboard');  // 已登入用戶重定向到儀表板
+  }
+  next();
+};
+
+// 渲染登入頁面 - 已登入用戶會被重定向到儀表板
+router.get('/login', redirectIfAuthenticated, (req, res) => {
     res.render('pages/login', {
-        title: 'Log In',
-        csrfToken: res.locals.csrfToken
+        title: '登入系統',
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 });
 
-// 渲染注册页面
-router.get('/signup', (req, res) => {
+// 渲染註冊頁面 - 已登入用戶會被重定向到儀表板
+router.get('/signup', redirectIfAuthenticated, (req, res) => {
     res.render('pages/signup', {
-        title: 'Sign Up',
-        csrfToken: res.locals.csrfToken
+        title: '註冊帳號',
+        csrfToken: req.csrfToken ? req.csrfToken() : ''
     });
 });
 

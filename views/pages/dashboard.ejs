@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <link rel="stylesheet" href="/main.css">
+</head>
+<body>
+    <header><%- include('../partials/header') %></header>
+    
+    <main>
+        <div class="dashboard-container">
+            <h1>Welcome, <%= user.name %>!</h1>
+            <h2>Your Current XP: <%= user.xp %> | Level: <%= user.level %></h2>
+            
+            <section class="profile-section">
+                <h3>Your Profile</h3>
+                <div id="profile-info">
+                    <p><strong>Username:</strong> <%= user.name %></p>
+                    <p><strong>Level:</strong> <%= user.level %></p>
+                    <p><strong>XP:</strong> <%= user.xp %></p>
+                </div>
+                
+                <!-- 個人資料更新表單（占位符） -->
+                <div id="profile-update">
+                    <h4>Update Profile</h4>
+                    <form id="profile-form">
+                        <div class="form-group">
+                            <label for="display-name">Display Name:</label>
+                            <input type="text" id="display-name" name="displayName" value="<%= user.name %>">
+                        </div>
+                        <button type="submit" class="btn-update">Update Profile</button>
+                    </form>
+                </div>
+            </section>
+            
+            <section class="quests-section">
+                <h3>Available Quests</h3>
+                <ul>
+                    <% quests.forEach(quest => { %>
+                        <li class="quest-item <%= quest.completed ? 'completed' : '' %>">
+                            <strong><%= quest.name %></strong> 
+                            [XP: <%= quest.xp %>]
+                            <% if (!quest.completed) { %>
+                                <form action="/quests/<%= quest.id %>/complete" method="POST">
+                                    <button type="submit" class="btn-complete">Complete Quest</button>
+                                </form>
+                            <% } else { %>
+                                <span class="completed-text">✓ Completed</span>
+                            <% } %>
+                        </li>
+                    <% }) %>
+                </ul>
+            </section>
+            
+            <div class="logout-container">
+                <a href="/auth/google/logout" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </main>
+    
+    <footer><%- include('../partials/footer') %></footer>
+</body>
+</html>

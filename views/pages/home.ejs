@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('../partials/head') %>
+    <link rel="stylesheet" href="/main.css">
+</head>
+<body class="home-page">
+    <header><%- include('../partials/header') %></header>
+    
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1><%= title %></h1>
+                <p class="hero-description"><%= description %></p>
+                <div class="hero-buttons">
+                    <a href="/login" class="btn-primary">登入</a>
+                    <a href="/signup" class="btn-secondary">註冊</a>
+                </div>
+            </div>
+        </section>
+        
+        <section class="features">
+            <h2>功能特色</h2>
+            <div class="features-grid">
+                <% features.forEach((feature, index) => { %>
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <!-- 可以根據索引添加不同的圖標 -->
+                            <span class="icon-<%= index+1 %>">✓</span>
+                        </div>
+                        <h3><%= feature %></h3>
+                    </div>
+                <% }) %>
+            </div>
+        </section>
+        
+        <section class="get-started">
+            <h2>立即開始</h2>
+            <p>註冊一個免費帳戶，今天就開始追蹤您的進度！</p>
+            <a href="/signup" class="btn-large">立即註冊</a>
+        </section>
+    </main>
+    
+    <footer><%- include('../partials/footer') %></footer>
+</body>
+</html>
