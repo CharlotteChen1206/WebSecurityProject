@@ -27,12 +27,12 @@ router.get("/", (req, res) => {
     
     // 未登入用戶顯示介紹頁面
     res.render("pages/home", {
-        title: "歡迎使用任務遊戲化系統",
-        description: "完成任務，獲得經驗值，提高等級！",
+        title: "Welcome to the Daily Quest Tracker",
+        description: "Complete tasks, earn experience points, and level up!",
         features: [
-            "設置個人目標並獲得獎勵",
-            "追蹤您的進度和成就",
-            "加入社群一起成長"
+            "Set personal goals and earn rewards",
+            "Track your progress and achievements",
+            "Join a community and grow together"
         ]
     });
 });
@@ -51,8 +51,6 @@ router.get("/dashboard", isAuthenticated, (req, res) => {
             
             const db = JSON.parse(data);
             
-            // 在實際應用中，您會使用req.user.id從資料庫獲取特定用戶資料
-            // 這裡我們使用data.json中的示例資料
             const userData = db.user;
             const questsData = db.quests;
             

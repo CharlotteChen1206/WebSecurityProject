@@ -8,16 +8,16 @@
     <header><%- include('../partials/header') %></header>
     
     <main class="auth-container">
-        <h1>登入系統</h1>
+        <h1>Login System</h1>
         
         <div class="auth-options">
             <a href="/auth/google" class="google-btn"> <!-- 修正 Google 認證路徑 -->
                 <img src="/google-icon.svg" alt="Google" /> <!-- 修正圖標路徑 -->
-                使用 Google 登入
+                Sign in with Google
             </a>
             
             <div class="divider">
-                <span>或</span>
+                <span>Or</span>
             </div>
         </div>
         
@@ -25,20 +25,20 @@
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             
             <div class="form-group">
-                <label for="username">使用者名稱</label>
+                <label for="username">Username</label>
                 <input type="text" id="username" name="username" required>
             </div>
             
             <div class="form-group">
-                <label for="password">密碼</label>
+                <label for="password">Password</label>
                 <input type="password" id="password" name="password" required>
             </div>
             
-            <button type="submit" class="submit-btn">登入</button>
+            <button type="submit" class="submit-btn">Login</button>
         </form>
         
         <p class="auth-footer">
-            還沒有帳號？ <a href="/signup">註冊新帳號</a>
+            No account yet? <a href="/signup">Create an account</a>
         </p>
     </main>
     

@@ -23,8 +23,6 @@ router.get("/", isAuthenticated, (req, res) => {
     try {
       const db = JSON.parse(data);
       
-      // 在實際應用中，您會使用req.user.id從資料庫獲取特定用戶資料
-      // 這裡我們使用data.json中的示例資料
       const userData = db.user;
       const questsData = db.quests;
       
