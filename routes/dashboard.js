@@ -3,7 +3,7 @@ const router = express.Router();
 const fs = require("fs");
 const path = require("path");
 const User = require("../models/User");
-const { sanitizeInput } = require("../utils/sanitizer");
+const { sanitizeInput, validateEmail, validateDisplayName, validateBio } = require("../utils/sanitizer");
 
 // 驗證使用者是否已登入的中間件
 const isAuthenticated = (req, res, next) => {
@@ -63,7 +63,7 @@ router.get("/", isAuthenticated, async (req, res) => {
 
 // 更新用戶資料
 router.post("/update-profile", isAuthenticated, async (req, res) => {
-  const { displayName, bio } = req.body;
+  const { displayName, bio, email } = req.body;
 
   if (!req.user) {
     console.error("更新資料時 req.user 為空");
@@ -75,9 +75,23 @@ router.post("/update-profile", isAuthenticated, async (req, res) => {
     return res.status(400).send("Display name cannot be empty");
   }
 
+  // 驗證電子郵件格式
+  if (!email || !validateEmail(email)) {
+    return res.status(400).send("Please enter a valid email address");
+  }
+
+  // 檢查郵箱是否已被其他用戶使用
+  if (email !== req.user.email) {
+    const existingUser = await User.findOne({ email, _id: { $ne: req.user._id } });
+    if (existingUser) {
+      return res.status(400).send("This email is already in use by another account");
+    }
+  }
+
   // 淨化輸入以防止XSS攻擊
   const sanitizedName = sanitizeInput(displayName);
   const sanitizedBio = bio ? sanitizeInput(bio) : "";
+  const sanitizedEmail = sanitizeInput(email);
 
   try {
     // 更新資料庫中的用戶資料
@@ -85,7 +99,8 @@ router.post("/update-profile", isAuthenticated, async (req, res) => {
       name: sanitizedName, 
       displayName: sanitizedName,
       username: sanitizedName,
-      bio: sanitizedBio
+      bio: sanitizedBio,
+      email: sanitizedEmail
     });
 
     // 更新 req.user 中的資料
@@ -93,6 +108,7 @@ router.post("/update-profile", isAuthenticated, async (req, res) => {
     req.user.displayName = sanitizedName;
     req.user.username = sanitizedName;
     req.user.bio = sanitizedBio;
+    req.user.email = sanitizedEmail;
 
     return res.redirect('/dashboard');
   } catch (error) {

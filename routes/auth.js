@@ -36,7 +36,7 @@ const generateRefreshToken = (user) => {
 // 本地註冊
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password, role = 'user' } = req.body;
+    let { username, email, password, role = 'user' } = req.body;
 
     // 防止XSS的輸入驗證
     if (!username || !email || !password) {
