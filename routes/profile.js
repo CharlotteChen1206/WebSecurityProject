@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const fs = require("fs");
 const path = require("path");
+const { sanitizeInput } = require("../utils/sanitizer");
 
 // 驗證用戶是否已登入的中間件
 const isAuthenticated = (req, res, next) => {
@@ -34,6 +35,7 @@ router.get("/", isAuthenticated, (req, res) => {
 
 // 更新用戶資料 API 端點 - 需要登入
 router.put("/update", isAuthenticated, (req, res) => {
+    const sanitizedName = sanitizeInput(req.body.name);
     const { name } = req.body;
     
     if (!name || name.trim() === "") {

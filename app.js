@@ -11,6 +11,7 @@ const cookieParser = require('cookie-parser');
 const csrf = require('csurf');
 const path = require('path');
 const { ensureAuthenticated, ensureSuperUser } = require('./middlewares/auth');
+const enforce = require('express-sslify'); // 強制 HTTPS
 
 // 初始化 Express
 const app = express();
@@ -151,6 +152,9 @@ app.use((req, res) => {
     error: {}
   });
 });
+
+// 使用 express-sslify 強制 HTTPS
+  app.use(enforce.HTTPS({ trustProtoHeader: true }));
 
 // 啟動伺服器
 const sslOptions = {

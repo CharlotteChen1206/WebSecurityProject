@@ -45,7 +45,7 @@
                         <% } %>
                         <div class="form-group">
                             <label for="display-name">Display Name:</label>
-                            <input type="text" id="display-name" name="displayName" value="<%= user ? user.name : '' %>" maxlength="50" pattern="[A-Za-z0-9\s\-_\.,]{2,50}" title="2-50 characters, alphanumeric and basic punctuation only">
+                            <input type="text" id="display-name" name="displayName" value="<%= user ? user.name : '' %>" maxlength="50" pattern="[A-Za-z0-9\s\-_\.,]{3,50}" title="3-50 characters, alphanumeric and basic punctuation only">
                         </div>
                         <div class="form-group">
                             <label for="email">Email:</label>

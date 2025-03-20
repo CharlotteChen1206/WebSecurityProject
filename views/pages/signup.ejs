@@ -12,9 +12,9 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             
             // 驗證用戶名
-            const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+            const usernameRegex = /^[a-zA-Z0-9_]{3,50}$/;
             if (!usernameRegex.test(username)) {
-                alert('Username must be 3-20 characters and contain only letters, numbers, and underscores.');
+                alert('Username must be 3-50 characters and contain only letters, numbers, and underscores.');
                 return false;
             }
             
@@ -72,8 +72,8 @@
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required 
-                       pattern="[a-zA-Z0-9_]{3,20}" 
-                       title="Username must be 3-20 characters and contain only letters, numbers, and underscores">
+                       pattern="[a-zA-Z0-9_]{3,50}" 
+                       title="Username must be 3-50 characters and contain only letters, numbers, and underscores">
             </div>
             
             <div class="form-group">
