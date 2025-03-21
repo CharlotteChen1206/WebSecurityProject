@@ -116,3 +116,34 @@ Another challenge was CSRF protection. At first, my API requests failed due to m
 Lastly, role-based access control required careful tracking of login attempts. Automatically upgrading a user to superuser after three successful logins meant implementing a login count system, which needed extensive testing to ensure it functioned correctly.
 
 Despite these challenges, I was able to successfully implement, test, and debug all authentication and security features. This process significantly strengthened the security of the application, ensuring that authentication is both secure and user-friendly.
+
+# Phase 3
+## Instructions
+- Clone the repository
+1. Create a file and open with Visual Studio Code
+2. Start a new terminal and enter `git clone https://github.com/CharlotteChen1206/WebSecurityProject.git`
+- Install dependencies
+1. Make sure Node.js is installed
+2. Initialize the project by creating a package.json file with `npm init -y`
+3. Install required packages for your project using `npm install express`
+- Run the application: In the terminal, run `node app.js`
+
+## Explanations
+- Input validation techniques
+The project applies strong input validation using both client-side and server-side methods. On the client side [login.ejs], [signup.ejs], JavaScript functions validate username, email, and password formats before form submission. On the server side, [sanitizer.js] defines custom validation functions like validateUsername, validateEmail, and validatePassword, which are used in routes such as [/auth/register] and [/dashboard/update-profile]. These ensure inputs follow strict patterns, preventing malformed or malicious data from reaching the database.
+
+- Output encoding methods
+To mitigate XSS attacks during rendering, I’ve sanitized user inputs using a custom sanitizeInput() function in [sanitizer.js]. This method escapes dangerous characters (<, >, &, ', ", /) by replacing them with their HTML entities, ensuring user-generated content (like bio, username, etc.) is safely displayed in EJS templates such as [dashboard.ejs]. This approach helps prevent malicious scripts from executing in the browser when rendering dynamic data.
+
+- Encryption techniques used
+The system uses AES-256-CBC encryption for storing sensitive user fields like email and bio in the database. The encryption key is securely stored in the environment variable SECRET_KEY and verified for correct length. Additionally, passwords are hashed using Argon2, a modern and secure password hashing algorithm, before being saved to the database [User.js]. This ensures that even if the database is compromised, sensitive data remains protected.
+
+- Third-party libraries dependency management
+I manage third-party libraries and their security using tools like `npm audit` for detecting vulnerabilities in installed packages. Additionally, I’ve enabled GitHub Dependabot alerts and security updates, which automatically notify and patch vulnerable dependencies in this repository. This helps maintain security and stability across the application by ensuring libraries are up to date and safe.
+
+## Lessons Learned
+Initially, I chose to store and retrieve user information from a data.json file during the login process. However, I encountered a problem where newly created accounts would overwrite the existing user data in the file. To resolve this issue, I switched to fetching user data directly from MongoDB, which ensured proper data persistence and avoided conflicts between users.
+
+While testing the registration and login functions, I frequently ran into different bugs that made the debugging process challenging. To improve visibility and streamline testing, I added more console.log statements to display detailed error messages at key points in the backend logic. This change significantly helped me identify and resolve issues more efficiently.
+
+From a development perspective, this experience highlights the importance of choosing the right data storage method for user management and maintaining clear, informative logging. It also emphasizes the value of real-time debugging tools and visibility when working with asynchronous operations like database queries and user authentication.
