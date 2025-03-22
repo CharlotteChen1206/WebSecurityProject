@@ -42,13 +42,14 @@ router.get("/", isAuthenticated, async (req, res) => {
         id: req.user._id,
         name: req.user.name || req.user.username || req.user.displayName || "User",
         username: req.user.username || req.user.name || "User",
-        email: req.user.email || "",
-        bio: req.user.bio || "",
+        email: req.user.decryptedEmail || "",  // 使用解密後的 email
+        bio: req.user.decryptedBio || "",      // 解密後的 bio
         profileImage: req.user.profileImage || "/default-profile.png",
         xp: req.user.xp || 0,
         level: req.user.level || 1,
         badges: req.user.badges || []
       };
+      
 
       return res.render("pages/dashboard", {
         user: userData,
@@ -95,13 +96,17 @@ router.post("/update-profile", isAuthenticated, async (req, res) => {
 
   try {
     // 更新資料庫中的用戶資料
-    await User.findByIdAndUpdate(req.user._id, { 
-      name: sanitizedName, 
-      displayName: sanitizedName,
-      username: sanitizedName,
-      bio: sanitizedBio,
-      email: sanitizedEmail
-    });
+    const user = await User.findById(req.user._id);
+if (!user) {
+  return res.redirect('/login');
+}
+user.name = sanitizedName;
+user.displayName = sanitizedName;
+user.username = sanitizedName;
+user.bio = sanitizedBio;
+user.email = sanitizedEmail;
+await user.save();
+
 
     // 更新 req.user 中的資料
     req.user.name = sanitizedName;

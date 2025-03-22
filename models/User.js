@@ -28,12 +28,13 @@ function decryptData(text) {
   if (!text) return '';
   const textParts = text.split(':');
   const iv = Buffer.from(textParts.shift(), 'hex');
-  const encryptedText = Buffer.from(textParts.join(':'), 'hex');
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  const encryptedText = Buffer.from(textParts.join(':'), 'hex'); // 加上 'hex'
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
   let decrypted = decipher.update(encryptedText);
   decrypted = Buffer.concat([decrypted, decipher.final()]);
   return decrypted.toString();
 }
+
 
 const UserSchema = new mongoose.Schema({
   username: {
