@@ -42,10 +42,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 連接 MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-}).then(() => console.log('✅ MongoDB 連線成功'))
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB 連線成功'))
   .catch(err => console.error('❌ MongoDB 連線錯誤:', err));
 
 // 設定 Express Session
@@ -154,17 +152,17 @@ app.use((req, res) => {
 });
 
 // 使用 express-sslify 強制 HTTPS
-  app.use(enforce.HTTPS({ trustProtoHeader: true }));
+app.use(enforce.HTTPS({ trustProtoHeader: true }));
 
 // 啟動伺服器
 const sslOptions = {
-    key: fs.readFileSync('key.pem'),
-    cert: fs.readFileSync('cert.pem'),
-  };
-  
-  // 直接啟動 HTTPS Server
-  https.createServer(sslOptions, app).listen(PORT, () => {
-    console.log(`HTTPS Server listening on https://localhost:${PORT}`);
-  });
-  
-  module.exports = app;
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem'),
+};
+
+// 直接啟動 HTTPS Server
+https.createServer(sslOptions, app).listen(PORT, () => {
+  console.log(`HTTPS Server listening on https://localhost:${PORT}`);
+});
+
+module.exports = app;
