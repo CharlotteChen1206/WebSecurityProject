@@ -1,3 +1,8 @@
+# Ethical Responsibilities of Security Professionals
+According to the ACM Code of Ethics, ethical security professionals must ensure that all testing is conducted in authorized and controlled environments to avoid harm (Principle 1.2). My security testing, including SQL injection and XSS attempts, was performed solely on my own Express web application with full authorization. This aligns with ethical standards that require responsible behavior, transparency, and respect for system integrity.
+# Legal Implications of Security Testing
+Under Canada’s PIPEDA (Personal Information Protection and Electronic Documents Act), organizations must safeguard personal information and ensure that data is only accessed for legitimate, authorized purposes. Since my testing was conducted in a local development environment using test accounts and did not involve real user data, it complies with PIPEDA’s principles of accountability and data protection.
+
 # Phase 1
 ## Setup Instructions
 1. Generate SSL Certificate: used OpenSSL to generate a self-signed certificate key.pem and cert.pem
@@ -147,3 +152,49 @@ Initially, I chose to store and retrieve user information from a data.json file 
 While testing the registration and login functions, I frequently ran into different bugs that made the debugging process challenging. To improve visibility and streamline testing, I added more console.log statements to display detailed error messages at key points in the backend logic. This change significantly helped me identify and resolve issues more efficiently.
 
 From a development perspective, this experience highlights the importance of choosing the right data storage method for user management and maintaining clear, informative logging. It also emphasizes the value of real-time debugging tools and visibility when working with asynchronous operations like database queries and user authentication.
+
+# Phase 4
+## Security Testing
+I performed both manual and automated security testing on my Express web application to identify common vulnerabilities.
+
+Manual Testing:
+- Attempted SQL injection by inputting ' OR 1=1 -- in the login and signup forms. The input was correctly rejected by input validation.
+- Attempted Cross-Site Scripting (XSS) by injecting <script>alert('XSS')</script> in the profile bio field. The input was stored but safely escaped, so the script did not execute.
+- Attempted CSRF by sending a forged POST request to update profile information without a valid CSRF token. The server returned a 401 error.
+- Attempted JWT replay attack by resending a previously issued access token after logout. The token was rejected due to expiry.
+
+Automated Testing:
+- Used OWASP ZAP to scan for missing security headers, CSP issues, cookie attributes, and cross-domain script inclusions.
+- Used npm audit to detect vulnerabilities in third-party dependencies.
+
+## Vulnerability Fixes
+Several issues were discovered and addressed:
+- SQL Injection & XSS: Already mitigated through server-side input validation and output escaping (no code changes needed).
+- CSRF Protection: Verified CSRF middleware was in place and working by attempting a forged request without a valid token.
+- JWT Replay Attack: Tokens were configured to expire after 15 minutes, effectively limiting replay windows.
+- Security Headers: Implemented the helmet middleware to add headers such as X-Content-Type-Options, Strict-Transport-Security, and X-Frame-Options.
+- Content Security Policy (CSP): Configured Helmet's contentSecurityPolicy to restrict script and style sources. Removed * wildcards and replaced 'unsafe-inline' with specific CDNs or moved code to external files.
+- Cookie Flags: Ensured httpOnly, secure, and sameSite attributes were added to session cookies.
+- Dependency Vulnerabilities: Ran `npm audit fix`. Remaining low-severity issues related to indirect dependencies were documented.
+
+## Testing Tools
+1. OWASP ZAP: Dynamic application security testing (DAST)
+- Contribution: Detected missing headers, CSP misconfigurations, cookie flag issues
+2. Postman: Manual testing of authenticated API endpoints, CSRF attempts, and token behavior
+- Contribution: Helped simulate unauthorized and replayed requests
+3. Browser DevTools: Checked cookies and headers, extracted CSRF tokens and session data
+- Contribution: Used for observing cookie flags and CSRF values
+4. npm audit: Scanned for known vulnerabilities in installed Node.js packages
+- Contribution: Helped identify outdated or unsafe dependencies
+5. VS Code + Console Logs: Debugged token generation, middleware flow, and input/output handling
+- Contribution: Validated fixes and security middleware behavior
+
+## Lessons Learned
+- Key Takeaways:
+Through this project, I gained a deeper understanding of various types of security threats using the STRIDE model (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege). I also became familiar with practical security testing tools such as OWASP ZAP and Threat Dragon, which allowed me to analyze and mitigate real-world vulnerabilities in my application.
+- What Worked Well:
+Most of the identified threats, including XSS, CSRF, insecure headers, and JWT replay, were successfully mitigated through proper configuration, middleware, and token handling. Automated tools like ZAP provided detailed feedback that helped refine the security posture of the application.
+- Challenges Faced:
+Creating the threat model diagram was time-consuming, especially when distinguishing between different types of assets, data flows, and threat categories. Understanding how each component interacts and how to accurately represent it in Threat Dragon required significant effort and research.
+- Areas for Improvement:
+One area for improvement is the automation and consistency of testing workflows. While manual testing and ZAP were effective, integrating automated test suites (e.g., using CI/CD pipelines or test scripts) would enhance repeatability and coverage. Additionally, stronger CSP configurations (e.g., using nonces or hashes instead of 'unsafe-inline') and better control over indirect dependency versions (npm audit) would further strengthen the application’s security baseline.
