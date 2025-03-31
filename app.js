@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
+const http = require('http');
 const https = require('https');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -33,7 +34,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   helmet({
     hsts: { maxAge: 31536000, includeSubDomains: true, preload: true },
-    contentSecurityPolicy: false // 在生產環境中需要適當配置
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "https://cdn.jsdelivr.net"],
+    styleSrc: ["'self'", "https://trusted.cdn.com"],
+    objectSrc: ["'none'"],
+    upgradeInsecureRequests: [],
+      }
+    }
   })
 );
 
@@ -151,18 +160,23 @@ app.use((req, res) => {
   });
 });
 
-// 使用 express-sslify 強制 HTTPS
-app.use(enforce.HTTPS({ trustProtoHeader: true }));
+if (process.env.NODE_ENV === 'production') {
+  // 強制 HTTPS（生產環境）
+  app.use(enforce.HTTPS({ trustProtoHeader: true }));
 
-// 啟動伺服器
-const sslOptions = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem'),
-};
+  const sslOptions = {
+    key: fs.readFileSync('key.pem'),
+    cert: fs.readFileSync('cert.pem')
+  };
 
-// 直接啟動 HTTPS Server
-https.createServer(sslOptions, app).listen(PORT, () => {
-  console.log(`HTTPS Server listening on https://localhost:${PORT}`);
-});
+  https.createServer(sslOptions, app).listen(PORT, () => {
+    console.log(`HTTPS Server listening on https://localhost:${PORT}`);
+  });
+} else {
+  // 開發模式下用 HTTP
+  http.createServer(app).listen(PORT, () => {
+    console.log(`HTTP Server listening on http://localhost:${PORT}`);
+  });
+}
 
 module.exports = app;

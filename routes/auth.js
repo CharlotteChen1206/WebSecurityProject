@@ -142,8 +142,8 @@ router.post('/login', loginLimiter, async (req, res, next) => {
           return next(loginErr);
         }
         
-        console.log("用戶成功登入:", user.username, "ID:", user._id);
-        console.log("會話 ID:", req.sessionID);
+        const accessToken = generateAccessToken(user);
+  console.log("🔐 JWT token:", accessToken);
         
         // 重定向到儀表板
         res.redirect('/dashboard');
